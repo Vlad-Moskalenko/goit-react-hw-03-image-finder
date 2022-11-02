@@ -14,6 +14,8 @@ export default async function fetchGetImage(searchQuery, currentPage = 1, perPag
   });
 
   return axios.get(`${BASE_URL}?${params}`)
-    .then(response => response.data.hits)
-    .catch(error => console.log(error.name))
+    .then(response => {
+      if(response.data.hits.length > 0) return response.data.hits;
+      new Error()
+    })
 }

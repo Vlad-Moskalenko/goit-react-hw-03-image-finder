@@ -5,10 +5,11 @@ import Loader from '../Loader/Loader';
 import fetchGetImage from '../api/fetchGetImage';
 import Button from '../Button/Button';
 import Modal from 'components/Modal/Modal';
+import { toast } from 'react-toastify';
 
 export default class ImageGallery extends Component {
   state = {
-    images: null,
+    images: [],
     status: 'idle',
     page: 1,
     showModal: false,
@@ -19,28 +20,34 @@ export default class ImageGallery extends Component {
   onLoadMore = () => this.setState(({ page }) => ({ page: page + 1 }));
 
   toggleModal = e => {
-    if (e && e.target.dataset.src)
+    if (e && e.target.dataset.src) {
       this.currentModalImage = e.target.dataset.src;
+    }
     this.setState(({ showModal }) => ({ showModal: !showModal }));
   };
 
-  async componentDidUpdate(prevProps, prevState) {
-    if (prevProps.searchQuery !== this.props.searchQuery) {
-      this.setState({ status: 'pending' });
-      const images = await fetchGetImage(this.props.searchQuery);
-      this.setState({ images: [...images], status: 'resolved', page: 1 });
-    }
-
-    if (prevState.page !== this.state.page) {
-      this.setState({ status: 'pending' });
-      const imagesMore = await fetchGetImage(
-        this.props.searchQuery,
-        this.state.page
-      );
+  onRequest = async (searchQuery, page) => {
+    try {
+      const newImages = await fetchGetImage(searchQuery, page);
       this.setState(({ images }) => ({
-        images: [...images, ...imagesMore],
+        images: [...images, ...newImages],
         status: 'resolved',
       }));
+    } catch {
+      toast.error(`Didn't find ${searchQuery}`);
+      this.setState({ status: 'rejected' });
+    }
+  };
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.searchQuery !== this.props.searchQuery) {
+      this.setState({ status: 'pending', page: 1, images: [] });
+      this.onRequest(this.props.searchQuery);
+    }
+
+    if (prevState.page !== this.state.page && this.state.page !== 1) {
+      this.setState({ status: 'pending' });
+      this.onRequest(this.props.searchQuery, this.state.page);
     }
   }
 
