@@ -1,14 +1,13 @@
-import './loader.css';
-
 import { Vortex } from 'react-loader-spinner';
+import css from './Loader.module.css';
 
-export default function Loader() {
+export const Loader = () => {
   return (
-    <div className="loader-wrapper">
+    <div className={css.loader}>
       <Vortex
         visible={true}
-        height="80"
-        width="80"
+        height="150"
+        width="150"
         ariaLabel="vortex-loading"
         wrapperStyle={{}}
         wrapperClass="vortex-wrapper"
@@ -16,4 +15,4 @@ export default function Loader() {
       />
     </div>
   );
-}
+};
